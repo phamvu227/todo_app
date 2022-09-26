@@ -18,9 +18,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final _titleController = TextEditingController();
   final _desController = TextEditingController();
+  TextEditingController editingSearchController = TextEditingController();
 
   TodoController get _watchTodoController => context.watch<TodoController>();
   TodoController get _readTodoController => context.read<TodoController>();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +34,14 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: <Widget>[
-          IconButton(
-              onPressed: () {
-                showSearch(
-                    context: context,
-                    delegate: Search(),
-                );
-              },
-              icon: Icon(Icons.search)),
+          // IconButton(
+          //     onPressed: () {
+          //       showSearch(
+          //           context: context,
+          //           delegate: Search(),
+          //       );
+          //     },
+          //     icon: Icon(Icons.search)),
           PopupMenuButton(
             itemBuilder: (context) => [
               PopupMenuItem(
@@ -46,50 +52,116 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: ListView.builder(
-          itemCount: _watchTodoController.allItem.length,
-          itemBuilder: (BuildContext context, int index) => Card(
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: ListTile(
-                      title: Text(
-                        'Title ' + _watchTodoController.allItem[index].title!,
-                        style: TextStyle(
-                          fontSize: 18,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Description: ' +
-                            _watchTodoController.allItem[index].des!,
-                        style: TextStyle(
-                          fontSize: 18,
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              editItemDialog(
-                                  Provider.of<TodoController>(context,
-                                          listen: false)
-                                      .allItem
-                                      .elementAt(index),
-                                  index);
-                              print('Edit');
-                            },
+      body: Container(
+        child: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                onChanged: (value) {
+                  setState(() {});
+                },
+                controller: editingSearchController,
+                decoration: const InputDecoration(
+                    labelText: "Search",
+                    hintText: "Search",
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(25.0)))),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _watchTodoController.allItem.length,
+                itemBuilder: (BuildContext context, int index) {
+                  if (editingSearchController.text.isEmpty) {
+                    return ListTile(
+                        title: Text(
+                          'Title ' + _watchTodoController.allItem[index].title!,
+                          style: TextStyle(
+                            fontSize: 18,
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              deleteItemDialog(context, index);
-                            },
+                        ),
+                        subtitle: Text(
+                          'Description: ' +
+                              _watchTodoController.allItem[index].des!,
+                          style: TextStyle(
+                            fontSize: 18,
                           ),
-                        ],
-                      )),
-                ),
-              )),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                editItemDialog(
+                                    Provider.of<TodoController>(context,
+                                            listen: false)
+                                        .allItem
+                                        .elementAt(index),
+                                    index);
+                                print('Edit');
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                deleteItemDialog(context, index);
+                              },
+                            ),
+                          ],
+                        ));
+                  } else if (
+                    _watchTodoController.allItem[index].title!.toLowerCase().contains(editingSearchController.text) ||
+                    _watchTodoController.allItem[index].des!.toLowerCase().contains(editingSearchController.text)
+                  ) {
+                    return ListTile(
+                        title: Text(
+                          'Title ' + _watchTodoController.allItem[index].title!,
+                          style: TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Description: ' +
+                              _watchTodoController.allItem[index].des!,
+                          style: TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                editItemDialog(
+                                    Provider.of<TodoController>(context,
+                                        listen: false)
+                                        .allItem
+                                        .elementAt(index),
+                                    index);
+                                print('Edit');
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                deleteItemDialog(context, index);
+                              },
+                            ),
+                          ],
+                        )
+                    );
+                  } else {
+                    return Container();
+                  }
+                }),
+            )
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: addItemDialog,
         child: const Icon(Icons.add),
